@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  
+  emailVerified   Boolean  @default(false) @map("email_verified")
+  verifyToken     String?  @unique @default(uuid()) @map("verify_token")
+  
+  channel         Channel?
+  subscriptions   Channel[]  @relation("AccountSubscriptions")
+  
+  videoLikes      Like[]
+  comments        Comment[]
+  viewHistory     View[]
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@index([email])
+  @@map("accounts")
+}
+
+model Channel {
+  id          String  @id @default(cuid())
+  handle      String  @unique
+  bio         String?
+  
+  avatarPath  String? @map("avatar_path")
+  bannerPath  String? @map("banner_path")
+  
+  owner       Account @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String  @unique @map("owner_id")
+  
+  videos      Video[]
+  followers   Account[] @relation("AccountSubscriptions")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@index([ownerId])
+  @@index([handle])
+  @@map("channels")
+}
+
+model Video {
+  id          String  @id @default(cuid())
+  publicId    String  @unique @map("public_id")
+  
+  title       String
+  description String  @default("")
+  
+  thumbnailPath   String  @map("thumbnail_path")
+  videoFileName   String  @map("video_file_name")
+  maxQuality      String  @default("1080p") @map("max_quality")
+  
+  views       Int     @default(0)
+  isPublished Boolean @default(false) @map("is_published")
+  
+  channel     Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId   String  @map("channel_id")
+  
+  likes       Like[]
+  comments    Comment[]
+  viewRecords View[]
+  
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  @@index([isPublished, createdAt])
+  @@index([channelId])
+  @@index([views])
+  @@index([publicId])
+  @@map("videos")
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  text    String
+  
+  author    Account @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String  @map("author_id")
+  
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId   String  @map("video_id")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@index([videoId, createdAt])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Like {
+  id String @id @default(cuid())
+  
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String  @map("account_id")
+  
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId   String  @map("video_id")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@unique([accountId, videoId])
+  @@index([videoId])
+  @@index([accountId])
+  @@map("likes")
+}
+
+model View {
+  id String @id @default(cuid())
+  
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String  @map("account_id")
+  
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId   String  @map("video_id")
+  
+  viewedAt DateTime @default(now()) @map("viewed_at")
+  
+  @@index([accountId, viewedAt])
+  @@index([videoId])
+  @@map("views")
+}

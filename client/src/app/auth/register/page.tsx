@@ -1,5 +1,6 @@
 'use client'
 import { Button, Input } from '@/common/components/ui'
+import { useRegister } from '@/modules/auth/hooks/useAuth'
 import { useForm } from 'react-hook-form'
 import { FaPlay } from 'react-icons/fa'
 
@@ -11,6 +12,7 @@ type RegisterFormData = {
 }
 
 export default function RegisterPage() {
+  const { register: registerUser, isLoading } = useRegister()
   const {
     register,
     handleSubmit,
@@ -18,8 +20,14 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterFormData>()
 
-  const onSubmit = (data: RegisterFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     console.log('Registration form submitted:', data)
+    await registerUser({
+      name: data.name || undefined,
+      email: data.email,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+    })
   }
   return (
     <div className="auth-card">
@@ -77,7 +85,7 @@ export default function RegisterPage() {
           })}
           error={errors.confirmPassword?.message}
         />
-        <Button variant="primary" fullWidth type="submit">
+        <Button variant="primary" fullWidth type="submit" disabled={isLoading}>
           Create Account
         </Button>
       </form>

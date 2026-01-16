@@ -67,6 +67,7 @@ export class AuthService {
 	}
 
 	async login(dto: LoginDto) {
+		console.log(dto)
 		const account = await this.db.account.findUnique({
 			where: { email: dto.email },
 			include: {

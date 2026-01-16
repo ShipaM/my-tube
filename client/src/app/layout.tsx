@@ -5,6 +5,7 @@ import '@/styles/modules/index.scss'
 
 import { Inter } from 'next/font/google'
 import { Metadata } from 'next'
+import { AppProviders } from '@/providers/app-providers'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' })
 
@@ -19,7 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body>{children}</body>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   )
 }

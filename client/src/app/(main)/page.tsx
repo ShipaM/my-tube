@@ -9,7 +9,7 @@ export default function HomePage() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`)
       .then((res) => res.json())
       .then((data) => setVideos(data.videos))
-  })
+  }, [])
   return (
     <div>
       <div className="page-header">

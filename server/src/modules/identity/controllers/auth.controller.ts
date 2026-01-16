@@ -25,6 +25,7 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	@Recaptcha({ response: req => req.body.recaptchaToken })
 	async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+		console.log(dto)
 		const result = await this.authService.login(dto)
 
 		this.setRefreshTokenCookie(res, result.refreshToken)

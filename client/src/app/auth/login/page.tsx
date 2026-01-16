@@ -2,12 +2,16 @@
 import { Button, Input } from '@/common/components/ui'
 import { useForm } from 'react-hook-form'
 import { FaPlay } from 'react-icons/fa'
+import { toast } from 'react-hot-toast'
+import { useLogin } from '@/modules/auth/hooks/useAuth'
 
 type LoginFormData = {
   email: string
   password: string
 }
 export default function LoginPage() {
+  const { login, isLoading } = useLogin()
+
   const {
     register,
     handleSubmit,
@@ -15,8 +19,9 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     defaultValues: { email: 'demo@example.com', password: 'password123' },
   })
-  const onSubmit = (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     console.log('Login form submitted:', data)
+    await login(data)
   }
 
   return (
@@ -54,7 +59,7 @@ export default function LoginPage() {
           })}
           error={errors.password?.message}
         />
-        <Button variant="primary" fullWidth type="submit">
+        <Button variant="primary" fullWidth type="submit" disabled={isLoading}>
           Sign In
         </Button>
       </form>

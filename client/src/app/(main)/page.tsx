@@ -1,15 +1,54 @@
 'use client'
 import { Video } from '@/modules/chanels/types/channels.types'
+import { useQuery } from '@tanstack/react-query'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function HomePage() {
-  const [videos, setVideos] = useState([])
-  console.log(videos)
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`)
-      .then((res) => res.json())
-      .then((data) => setVideos(data.videos))
-  }, [])
+  // const [videos, setVideos] = useState([])
+  // console.log(videos)
+  // useEffect(() => {
+  //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`)
+  //     .then((res) => res.json())
+  //     .then((data) => setVideos(data.videos))
+  // }, [])
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['videos'],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/videos`)
+      return res.json()
+    },
+  })
+
+  const videos = data?.videos || []
+
+  if (isLoading) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1 className="page-header__title">Welcome to MyTube</h1>
+        </div>
+        <div style={{ padding: '20rem', textAlign: 'center', color: '#888' }}>
+          Loading videos...
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1 className="page-header__title">Welcome to MyTube</h1>
+        </div>
+        <div style={{ padding: '20rem', textAlign: 'center', color: '#f44336' }}>
+          Error:{error instanceof Error ? error.message : 'Something went wrong'}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -19,7 +58,7 @@ export default function HomePage() {
       <div className="video-grid">
         {videos?.map((video: Video) => {
           return (
-            <div className="video-card" key={video.id}>
+            <Link href={`/watch?v=${video.publicId}`} className="video-card" key={video.id}>
               <div className="video-card__thumbnail">
                 <img
                   src={`${process.env.NEXT_PUBLIC_API_URL}${video.thumbnailPath}`}
@@ -51,7 +90,7 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
           )
         })}
       </div>
